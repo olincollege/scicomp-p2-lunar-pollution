@@ -29,15 +29,11 @@ fig = plt.figure(figsize=(8, 8))
 ax = fig.add_subplot(111, projection='3d')
 
 # Plot the 3D sphere in blue color
+# (Note: Reducing size of sphere does not work)
 ax.plot_surface(x, y, z, color='#EEEEEE', alpha=0.5, linewidth=0)
 
-# for theta in np.linspace(0, np.pi, 20):
-#     for phi in np.linspace(0, 2*np.pi, 20):
-#         # Plot the point on the sphere in red color
-#         ax.scatter(*coord_converter(theta, phi), color='r', s = 10)
-
-b = 1
-p = np.pi / 2
+b = np.pi - 1
+p = 0
 ax.scatter(*coord_converter(b, p), color='r', s = 10)
 
 # Set labels and title
