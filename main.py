@@ -17,12 +17,12 @@ def coord_converter(beta, phi):
     z = np.cos(beta)
     return (x, y, z)
 
-# Create a meshgrid of phi and theta values
-# (phi is 'longitude', theta is 'latitude')
+# Create a meshgrid of phi and beta values
+# (phi is 'longitude', beta is 'latitude')
 # Figure out - what does j mean?? Without j, sphere doesn't display
-phi, theta = np.mgrid[0.0:2.0*np.pi:100j, 0.0:np.pi:50j]
+phi, beta = np.mgrid[0.0:2.0*np.pi:100j, 0.0:np.pi:50j]
 
-(x, y, z) = coord_converter(theta, phi)
+(x, y, z) = coord_converter(beta, phi)
 
 # Create a 3D figure
 fig = plt.figure(figsize=(8, 8))
@@ -32,9 +32,11 @@ ax = fig.add_subplot(111, projection='3d')
 # (Note: Reducing size of sphere does not work)
 ax.plot_surface(x, y, z, color='#EEEEEE', alpha=0.5, linewidth=0)
 
-b = np.pi - 1
-p = 0
-ax.scatter(*coord_converter(b, p), color='r', s = 10)
+# Plots uniformly distributed points on sphere
+for beta in np.linspace(0, np.pi, 20):
+    for phi in np.linspace(0, 2*np.pi, 20):
+        # Plot the point on the sphere in red color
+        ax.scatter(*coord_converter(beta, phi), color='r', s = 10)
 
 # Set labels and title
 ax.set_xlabel('X')

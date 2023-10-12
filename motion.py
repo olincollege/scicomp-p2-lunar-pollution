@@ -11,6 +11,12 @@ MASS_WATER = MOLAR_WATER / AVOGADRO
 BOLTZMANN = 1.38 * np.power(10.0, -23)
 T_SURFACE = 500
 
+# Make movement function
+# def move(beta_current, phi_current, distance):
+#     relative_distance = distance/R_MOON
+#     # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA HOW DO I DO THIS
+#     return (beta_new, phi_new)
+
 def velocity_rms(mass_molecule, t_surface):
     return np.sqrt((3 * BOLTZMANN * t_surface) / mass_molecule)
 
@@ -52,8 +58,3 @@ print(t_water)
 # T_0 = 100 # Unclear what T_0 and T_1 mean for modelling
 # T_1 = 100
 # N_UNKNOWN = 0.25 # I can't figure out what this does
-# Plots uniformly distributed points on sphere
-# for theta in np.linspace(0, np.pi, 20):
-#     for phi in np.linspace(0, 2*np.pi, 20):
-#         # Plot the point on the sphere in red color
-#         ax.scatter(*coord_converter(theta, phi), color='r', s = 10)
