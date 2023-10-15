@@ -29,33 +29,51 @@ def plot_sphere(ax):
     # (Note: Reducing size of sphere does not work)
     ax.plot_surface(x, y, z, color='#EEEEEE', alpha=0.5, linewidth=0)
 
-def plot_points(ax, phi_start, beta_start, phi_end, beta_end, is_captured):
-    ax.scatter(*coord_converter(phi_start, beta_start), color='r', s = 10)
+    circle_beta = np.linspace(0, 2*np.pi, 100)
+    circle1_phi = np.full(100, motion.PHI_POLE)
+    circle2_phi = np.full(100, np.pi - motion.PHI_POLE)
 
-    if is_captured:
-        ax.scatter(*coord_converter(phi_end, beta_end), color='b', s = 10)
-    else:
-        ax.scatter(*coord_converter(phi_end, beta_end), color='g', s = 10)
+    ax.plot(*coord_converter(circle1_phi, circle_beta))
+    ax.plot(*coord_converter(circle2_phi, circle_beta))
 
-def finish(ax):
+def plot_points(ax, phi, beta, color='r'):
+    ax.scatter(*coord_converter(phi, beta), color=color, s = 10)
+
+def plot_finish(ax, title):
     # Set labels and title
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
-    ax.set_title('3D Sphere with a Colored Point')
+    ax.set_title(title)
 
     # Show the plot
     plt.show()
 
-phi_start = np.pi / 2
-beta_start = 0
-(phi_end, beta_end) = motion.move(phi_start, beta_start)
-is_captured = True # Dummy just as a placeholder for plotting
+def plot_option_journey(ax, phi, beta):
+    v_initial = motion.velocity_rms(motion.MASS_WATER, motion.T_SURFACE)
+    t_hop = motion.time_per_hop(v_initial, motion.ANGLE)
 
-# Create a 3D figure
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_subplot(111, projection='3d')
+    for i in range(1000):
+        plot_points(ax, phi, beta)
+        ax.text(*coord_converter(phi, beta), i, fontsize=6)
+        (phi, beta) = motion.move(phi, beta)
+        if motion.is_photodestroy(t_hop):
+            print(i)
+            plot_points(ax, phi, beta, color='g')
+            break
 
-plot_sphere(ax)
-plot_points(ax, phi_start, beta_start, phi_end, beta_end, is_captured)
-finish(ax)
+        if motion.is_captured(phi):
+            print(i)
+            print("Captured!")
+            plot_points(ax, phi, beta, color='b')
+            break
+
+
+# # Plotting journey of single molecule for visualizing
+# # Maybe include as a "menu" select item when plotting?
+# fig = plt.figure(figsize=(8, 8))
+# ax = fig.add_subplot(111, projection='3d')
+
+# plot_sphere(ax)
+# plot_option_journey(ax, phi = np.pi / 2, beta = 0)
+# plot_finish(ax, "Journey of single molecule")

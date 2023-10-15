@@ -94,15 +94,19 @@ def distance_per_hop(v_initial, launch_angle):
     return v_initial * np.cos(launch_angle) * t_hop
         
 
-def probs_photodestroy(t_hop):
+def is_photodestroy(t_hop):
     """
-    Probability of a particle being destroyed for a certain hop time
+    If a particle is photodestroyed for a certain hop time
 
-    Uses time from time_per_hop
+    Uses time from time_per_hop, probability of destruction in given hop
     Arg:
         t_hop: Float time spent in the hop
+
+    Return:
+        Boolean of whether particle has been destroyed or not
     """
-    return 1 - np.exp(t_hop / PHOTOLOSS_TIMESCALE)
+    prob = 1 - np.exp(-t_hop / PHOTOLOSS_TIMESCALE)
+    return np.random.uniform(0, 1) < prob
 
 def is_captured(phi):
     """
@@ -187,13 +191,6 @@ def move(phi, beta):
     phi_new = update_phi(phi, delta, psi)
     beta_new = update_beta(delta, phi_new, phi, beta, psi)
     return(phi_new, beta_new)
-
-
-
-
-
-
-# print(d_water)
 
 
 # Make movement function
