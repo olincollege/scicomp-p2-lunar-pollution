@@ -68,6 +68,12 @@ def plot_option_journey(ax, phi, beta):
             plot_points(ax, phi, beta, color='b')
             break
 
+def plot_option_results(ax):
+    # Randomly uniformly distribute a bunch of particles on sphere
+    # Keep looping till they are captured or destroyed
+    # Maybe implement it one-by-one first
+    # And then try doing it in numpy arrays
+    pass
 
 # # Plotting journey of single molecule for visualizing
 # # Maybe include as a "menu" select item when plotting?
