@@ -1,13 +1,23 @@
 # # To do:
-# 1) Implement "hopping" by distance moved based on constant speed
-# 2) Figure out how distance can be moved on the "surface", random direction
-# 3) Include time into hopping
-# 4) With model of many molecules hopping, implement capture
-# 5) Implement photodissociation
-# 6) (Stretch) implement for different amu's - will involve updating movement function
+# 1) Implement for different amu to see rocket pollutants - uses water 20% is cold trapped released at 70 latitude
+# 2) Create plotting/runing options by reorganizing everything
+# These include 1993 vs. 1997 paper params, maybe an animation, possible loading bar for long runs
+# 3) Write documentation
 
+# # Notes:
+# Existing monte carlo simulation may not accurately model lunar transport, argued by Dr. Prem
+# ^^ Since water interactions with each other are significant, and also we know cold traps
+# Very sensitive to photodissociation 
+
+
+# # Options:
+# 1) 1993 Simulation new decay constant journey, one run, multiple runs
+# 2) 1997 Simulation new decay constant journey, one run, multiple runs
+# 3) Dr. Prem simulation one run, multiple runs with Butler photodissociation
+# 4) Dr. Prem simulation multiple runs with her photodissociation
 import matplotlib.pyplot as plt
-import motion
+from motion import Particle
+import helpers as h
 import numpy as np
 
 
@@ -30,12 +40,12 @@ def plot_sphere(ax):
     # (Note: Reducing size of sphere does not work)
     ax.plot_surface(x, y, z, color='#EEEEEE', alpha=0.5, linewidth=0)
 
-    # circle_beta = np.linspace(0, 2*np.pi, 100)
-    # circle1_phi = np.full(100, motion.PHI_POLE)
-    # circle2_phi = np.full(100, np.pi - motion.PHI_POLE)
+    circle_beta = np.linspace(0, 2*np.pi, 100)
+    circle1_phi = np.full(100, h.PHI_POLE)
+    circle2_phi = np.full(100, np.pi - h.PHI_POLE)
 
-    # ax.plot(*coord_converter(circle1_phi, circle_beta))
-    # ax.plot(*coord_converter(circle2_phi, circle_beta))
+    ax.plot(*coord_converter(circle1_phi, circle_beta))
+    ax.plot(*coord_converter(circle2_phi, circle_beta))
 
 def plot_points(ax, phi, beta, color='r'):
     ax.scatter(*coord_converter(phi, beta), color=color, s = 10)
@@ -50,31 +60,31 @@ def plot_finish(ax, title):
     # Show the plot
     plt.show()
 
-def plot_option_journey(ax, phi, beta):
-    v_initial = motion.velocity_rms(motion.MASS_WATER, motion.T_SURFACE)
-    t_hop = motion.time_per_hop(v_initial, motion.ANGLE)
+def plot_option_journey(ax, phi, beta, model_option):
+    p = Particle(phi, beta, model_option)
 
     for i in range(1000):
-        plot_points(ax, phi, beta)
-        ax.text(*coord_converter(phi, beta), i, fontsize=6)
-        (phi, beta) = motion.move(phi, beta)
-        if motion.is_photodestroy(t_hop):
-            print(i)
-            plot_points(ax, phi, beta, color='g')
+        plot_points(ax, p.phi, p.beta)
+        ax.text(*coord_converter(p.phi, p.beta), i, fontsize = 6)
+        p.move()
+        if p.is_photodestroy():
+            print(f"Destroyed after {i} hops")
+            plot_points(ax, p.phi, p.beta, color='g')
             break
 
-        if motion.is_captured(phi):
-            print(i)
-            print("Captured!")
-            plot_points(ax, phi, beta, color='b')
+        if p.is_captured():
+            print(f"Captured after {i} hops")
+            plot_points(ax, p.phi, p.beta, color='b')
             break
+            
+        p.update_conditions()
 
-def plot_option_one_run(ax):
+def plot_option_one_run(ax, phi, beta, model_option):
     n_destroyed = 0
     n_captured = 0
-    for i in range(100):
+    for _ in range(100):
 
-        p = motion.Particle(i)
+        p = Particle(phi, beta, model_option)
 
         while n_captured + n_destroyed < 100:
             p.move()
@@ -87,24 +97,20 @@ def plot_option_one_run(ax):
                 n_captured += 1
                 plot_points(ax, p.phi, p.beta, color='b')
                 break
-            
+
             p.update_conditions()
 
     print(f"Photodestroyed: {n_destroyed}, Captured: {n_captured}")
 
-def run_option_all_runs():
-    v_initial = motion.velocity_rms(motion.MASS_WATER, motion.T_SURFACE)
-    t_hop = motion.time_per_hop(v_initial, motion.ANGLE)
-
+def option_all_runs(phi, beta, model_option):
     total_destroyed = 0
     total_captured = 0
     for _ in range(50):
         n_destroyed = 0
         n_captured = 0
 
-        for i in range(100):
-            phi, beta = sample_spherical(1)
-            p = motion.Particle(phi, beta, motion.T_SURFACE, v_initial, t_hop, i)
+        for _ in range(100):
+            p = Particle(phi, beta, model_option)
 
             for _ in range(1000):
                 p.move()
@@ -115,6 +121,8 @@ def run_option_all_runs():
                 if p.is_captured():
                     n_captured += 1
                     break
+                
+                p.update_conditions()
 
         total_destroyed += n_destroyed
         total_captured += n_captured
@@ -122,27 +130,98 @@ def run_option_all_runs():
     perc_captured = total_captured / (total_captured + total_destroyed)
     print(f"Percentage captured: {perc_captured*100}%")
 
+def option_journey(phi, beta, model_option):
+    fig = plt.figure(figsize=(8, 8))
+    ax = fig.add_subplot(111, projection='3d')
 
-# run_option_all_runs()
+    plot_sphere(ax)
+    plot_option_journey(ax, phi, beta, model_option)
+    plot_finish(ax, "Journey of single molecule")
+
+
+def option_one_run(phi, beta, model_option):
+    fig = plt.figure(figsize=(8, 8))
+    ax = fig.add_subplot(111, projection='3d')
+    plot_sphere(ax)
+    plot_option_one_run(ax, phi, beta, model_option)
+    plot_finish(ax, "Positions of 100 molecules")
+
+def choose_start():
+    phi, beta = h.sample_spherical()
+
+    print("Choose your starting point:")
+    print("A) Random")
+    print("B) 70 degrees South (Dr. Prem)")
+    start_point = input("Enter your starting point option (just the letter): ")
+    if start_point == "A":
+        return phi, beta
+    
+    elif start_point == "B":
+        phi = 70 * (np.pi / 180)
+        beta = 0
+        return phi, beta
+
+    print("ERROR: Please enter a valid option!")
+    print("")
+    return choose_start()
+    
+def choose_model():
+    model_option = "1997"
+
+    print("Choose your model:")
+    print("A) Butler (1997)")
+    print("B) Butler (1993)")
+    model = input("Enter your starting point option (just the letter): ")
+    if model == "A":
+        return model_option
+    
+    elif model == "B":
+        model_option = "1993"
+        return model_option
+
+    print("ERROR: Please enter a valid option!")
+    print("")
+    return choose_model()
+
+def choose_run(phi, beta, model_option):
+    print("Choose your run type:")
+    print("A) Plot of journey of one particle")
+    print("B) Final destinations of multiple particles in model")
+    print("C) Average of 50 runs of simulation")
+    run_type = input("Enter your model type option (just the letter): ")
+    if run_type == "A":
+        option_journey(phi, beta, model_option)
+    elif run_type == "B":
+        option_one_run(phi, beta, model_option)
+    elif run_type == "C":
+        option_all_runs(phi, beta, model_option)
+    else:
+        print("ERROR: Please enter a valid option!")
+        print("")
+        choose_run(phi, beta, model_option)
+
+
+
+def process_options():
+    phi, beta = choose_start()
+    model_option = choose_model()
+    choose_run(phi, beta, model_option)
+    
+    
+
+process_options()
+# option_all_runs()
+
+# option_one_run()
 # # Plotting journey of single molecule for visualizing
 # # Maybe include as a "menu" select item when plotting?
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_subplot(111, projection='3d')
+# fig = plt.figure(figsize=(8, 8))
+# ax = fig.add_subplot(111, projection='3d')
 
 # plot_sphere(ax)
-# plot_option_journey(ax, phi = np.pi / 2, beta = 0)
+# plot_option_journey(ax)
 # plot_finish(ax, "Journey of single molecule")
 
-plot_sphere(ax)
-plot_option_one_run(ax)
-plot_finish(ax, "Positions of 100 molecules")
-
-## Options - 
-# 1) Move plotting/iteration into numpy arrays
-# 2) OR Generate multiple runs to get average percentage
-# 3) OR Reach true randomization
-# 4) Move motion calculation into numpy arrays
-# 5) OR implement more features from 1997 (non-uniform temperature)
-# 6) Implement for non-water particles
-
-# 3, 2, 1
+# plot_sphere(ax)
+# plot_option_one_run(ax)
+# plot_finish(ax, "Positions of 100 molecules")
