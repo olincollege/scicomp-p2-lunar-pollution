@@ -1,4 +1,4 @@
-from motion import Particle
+from agent import Particle
 import helpers as h
 import matplotlib.pyplot as plt
 from tqdm import tqdm
