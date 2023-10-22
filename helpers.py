@@ -1,3 +1,7 @@
+"""
+Helper functions and constants
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -111,7 +115,6 @@ def distance_per_hop(v_initial, launch_angle):
     """
     t_hop = time_per_hop(v_initial, launch_angle)
     return v_initial * np.cos(launch_angle) * t_hop
-        
 
 def get_delta(v_initial, launch_angle):
     """
@@ -119,7 +122,8 @@ def get_delta(v_initial, launch_angle):
 
     Currently assumed to be a fixed arc length calculated from initial velocity
 
-    Returns: Float with angle in radians
+    Returns:
+        Float with angle in radians
     """
     d_water = distance_per_hop(v_initial, launch_angle)
     return d_water / R_MOON
@@ -169,11 +173,10 @@ def coord_converter(phi, beta):
 def plot_sphere(ax):
     """
     Plot a unit sphere in 3-D space
-    
+
     Arg:
         ax: Axes on which to plot
     """
-    print(type(ax))
     # Create a meshgrid of phi and beta values
     phi, beta = np.mgrid[0.0:2.0*np.pi:100j, 0.0:np.pi:50j]
 
@@ -194,7 +197,7 @@ def plot_sphere(ax):
 def plot_points(ax, phi, beta, color='r'):
     """
     Plot a point on a sphere
-    
+
     Arg:
         ax: Axes on which to plot
         phi: Float polar spherical coordinate (radians)
@@ -206,7 +209,7 @@ def plot_points(ax, phi, beta, color='r'):
 def plot_finish(ax, title):
     """
     Finish up a plot in 3-D space
-    
+
     Arg:
         ax: Axes on which to plot
         title: String for the title of the figure
