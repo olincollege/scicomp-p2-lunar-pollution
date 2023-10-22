@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Acceleration due to gravity at the moon (m/s^2)
 G_MOON = 1.625
@@ -147,3 +148,74 @@ def get_angle(model_option):
     if model_option == "1993":
         return np.pi / 4
     return np.arccos(np.random.uniform(0, 1))
+
+def coord_converter(phi, beta):
+    """
+    Convert from spherical to cartesian coordinate system
+
+    Args:
+        phi: Float polar coordinate (radians)
+        beta: Float azimuthal coordinate (radians)
+
+    Returns:
+        x, y, and z positions as floats between -1 and 1
+    """
+    # Spherical coordinates to Cartesian coordinates conversion
+    x = np.sin(phi) * np.sin(beta)
+    y = np.cos(phi)
+    z = np.sin(phi) * np.cos(beta)
+    return (x, y, z)
+
+def plot_sphere(ax):
+    """
+    Plot a unit sphere in 3-D space
+    
+    Arg:
+        ax: Axes on which to plot
+    """
+    print(type(ax))
+    # Create a meshgrid of phi and beta values
+    phi, beta = np.mgrid[0.0:2.0*np.pi:100j, 0.0:np.pi:50j]
+
+    # Convert to cartesian
+    (x, y, z) = coord_converter(beta, phi)
+
+    # Plot the 3D sphere in blue color
+    ax.plot_surface(x, y, z, color='#EEEEEE', alpha=0.5, linewidth=0)
+
+    # Plot two circles representing poles from Butler 1993
+    circle_beta = np.linspace(0, 2*np.pi, 100)
+    circle1_phi = np.full(100, PHI_POLE)
+    circle2_phi = np.full(100, np.pi - PHI_POLE)
+
+    ax.plot(*coord_converter(circle1_phi, circle_beta))
+    ax.plot(*coord_converter(circle2_phi, circle_beta))
+
+def plot_points(ax, phi, beta, color='r'):
+    """
+    Plot a point on a sphere
+    
+    Arg:
+        ax: Axes on which to plot
+        phi: Float polar spherical coordinate (radians)
+        beta: Float azimuthal spherical coordinate (radians)
+        color: Character for color of point, default red
+    """
+    ax.scatter(*coord_converter(phi, beta), color=color, s = 10)
+
+def plot_finish(ax, title):
+    """
+    Finish up a plot in 3-D space
+    
+    Arg:
+        ax: Axes on which to plot
+        title: String for the title of the figure
+    """
+    # Set labels and title
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.set_title(title)
+
+    # Show the plot
+    plt.show()
