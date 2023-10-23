@@ -21,7 +21,7 @@ class Particle:
     """
     def __init__(self, start_option, model_option):
         # Set initial coordinates (default 70 degrees south)
-        self.phi = 70 * (np.pi / 180)
+        self.phi = np.pi / 2
         self.beta = 0
 
         # If option is random, set initial coordinates as random
